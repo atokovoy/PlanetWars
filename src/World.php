@@ -35,6 +35,13 @@ abstract class World
     protected $registry;
 
     /**
+     * @var Logger
+     */
+    protected $logger;
+
+    protected $logFilename;
+
+    /**
      * @abstract
      * @return \Command\CommandManager
      */
@@ -45,6 +52,18 @@ abstract class World
      * @return string
      */
     abstract public function getCacheDir();
+
+    /**
+     * @return Logger
+     */
+    public function getLogger()
+    {
+        if (null == $this->logger) {
+            $this->logger = new Logger();
+        }
+
+        return $this->logger;
+    }
 
     /**
      * @param $cacheDir
@@ -62,12 +81,17 @@ abstract class World
         $aspect->createAdvice(Planet::clazz(), 'removeShips', $this->createEventAdvice($this->eventManager, Event::PLANET_CHANGE_SHIPS));
         $aspect->createAdvice(Planet::clazz(), 'setOwnerId', $this->createEventAdvice($this->eventManager, Event::PLANET_CHANGE_OWNER));
 
+        $aspect->createAdvice(Fleet::clazz(), 'doTurn', $this->createLoggerAdvice("Fleet does next turn", Logger::LEVEL_INFO));
+
         return $aspect;
     }
 
-    protected function createEventAdvice($eventManager, $eventName)
+    protected function createEventAdvice(EventManager $eventManager, $eventName)
     {
         $eventAdvice = function($obj) use ($eventManager, $eventName) {
+            /**
+             * @var $eventManager EventManager
+             */
             $event = new \Event\Event($eventName, $obj);
             $eventManager->notify($event);
         };
@@ -75,16 +99,32 @@ abstract class World
         return $eventAdvice;
     }
 
+    protected function createLoggerAdvice($message, $logLevel)
+    {
+        $logger = $this->getLogger();
+        $loggerAdvice = function($obj) use ($logger, $logLevel, $message) {
+            /**
+             * @var $logger Logger
+             */
+            $logger->write($message, $logLevel);
+        };
+
+        return $loggerAdvice;
+    }
+
     public function init()
     {
+        /**
+         * These two object should be created before we introduce advices
+         */
         $this->eventManager = new EventManager();
 
         $aspect = $this->createAspect($this->getCacheDir());
 
-        $this->map = new Map();
+        $this->map = $aspect->introduce(new Map());
         $this->map->setAspect($aspect);
 
-        $this->fleetManager = new FleetManager($this->map, $this->eventManager);
+        $this->fleetManager = $aspect->introduce(new FleetManager($this->map, $this->eventManager));
         $this->fleetManager->setAspect($aspect);
 
         $this->commandManager = $this->createCommandManager();

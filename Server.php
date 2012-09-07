@@ -10,6 +10,8 @@ $server = new Server();
 $server->setMaxPlayers(1);
 $server->setMapName('maps/2/map1.txt');
 $server->setCacheDir('cache');
+$server->getLogger()->setFilename('log/server.log');
+$server->getLogger()->setLogLevel(Logger::LEVEL_ALL);
 $server->init();
 $server->start(8181);
 

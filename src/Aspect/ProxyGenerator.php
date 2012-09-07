@@ -63,8 +63,6 @@ class ProxyGenerator
         $body.= sprintf('$result = call_user_func_array(array($this->obj, "%s"), $args);', $name) . "\n";
 
         if (in_array($name, $joinPoints)) {
-            //$body.= sprintf('$event = new \Event\Event("%s", $this->obj);', $joinPoints[$name]) . "\n";
-            //$body.= '$this->observer->notify($event);' . "\n";
             $body.= sprintf('$this->getAspect()->callAdvice("%s", "%s", array_merge(array($this->obj), $args));', $className, $name) . "\n";
         }
 

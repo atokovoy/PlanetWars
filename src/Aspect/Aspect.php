@@ -43,11 +43,14 @@ class Aspect
         if (!isset($this->advices[$className])) {
             $this->advices[$className] = array();
         }
+        if (!isset($this->advices[$className][$methodName])) {
+            $this->advices[$className][$methodName] = array();
+        }
         if (!is_callable($advice)) {
             throw new \Exception("Invalid aspect advice");
         }
 
-        $this->advices[$className][$methodName] = $advice;
+        $this->advices[$className][$methodName][] = $advice;
     }
 
     public function callAdvice($className, $methodName, array $args)
@@ -55,9 +58,9 @@ class Aspect
         if (!isset($this->advices[$className][$methodName])) {
             throw new \Exception(sprintf("Unknown advice %s, %s", $className, $methodName));
         }
-
-        $advice = $this->advices[$className][$methodName];
-        call_user_func_array($advice, $args);
+        foreach ($this->advices[$className][$methodName] as $advice) {
+            call_user_func_array($advice, $args);
+        }
     }
 
     public function introduce($object)
