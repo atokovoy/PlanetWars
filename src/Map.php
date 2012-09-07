@@ -5,7 +5,7 @@ use Entity\Planet;
  * @copyright 2012
  * @author Anton Tokovoy <barss.dev@gmail.com>
  */
-class Map extends \Event\ObjectCreator
+class Map extends \Aspect\AspectAware
 {
     protected $planets = array();
 
@@ -53,14 +53,16 @@ class Map extends \Event\ObjectCreator
      */
     public function createPlanet($planetDefinition)
     {
-        return $this->getObjectFactory()->createPlanet(
-                $planetDefinition['id'],
-                $planetDefinition['player'],
-                $planetDefinition['ships'],
-                $planetDefinition['rate'],
-                $planetDefinition['x'],
-                $planetDefinition['y']
-            );
+        $planet = new Planet(
+            $planetDefinition['id'],
+            $planetDefinition['player'],
+            $planetDefinition['ships'],
+            $planetDefinition['rate'],
+            $planetDefinition['x'],
+            $planetDefinition['y']
+        );
+
+        return $this->getAspect()->introduce($planet);
     }
 
     public function getPlanetDefinition(\Entity\Planet $planet)

@@ -86,4 +86,9 @@ class Planet
     {
         $this->numShips -= $amount;
     }
+
+    public static function clazz()
+    {
+        return get_called_class();
+    }
 }

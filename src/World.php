@@ -1,20 +1,21 @@
 <?php
+use Entity\Planet,
+    Entity\Fleet;
+use Event\Event;
 
 /**
  * @copyright 2012
  * @author Anton Tokovoy <barss.dev@gmail.com>
  */
-class World
+abstract class World
 {
-    protected $players;
-
     /**
      * @var \Map
      */
     protected $map;
 
     /**
-     * @var CommandManager
+     * @var \Command\CommandManager
      */
     protected $commandManager;
 
@@ -34,94 +35,64 @@ class World
     protected $registry;
 
     /**
-     * @var CombatLog
+     * @abstract
+     * @return \Command\CommandManager
      */
-    protected $combatLog;
+    abstract protected function createCommandManager();
 
-    protected function isAlive(Player $player)
+    /**
+     * @abstract
+     * @return string
+     */
+    abstract public function getCacheDir();
+
+    /**
+     * @param $cacheDir
+     * @return Aspect\Aspect
+     */
+    protected function createAspect($cacheDir)
     {
-        return $this->map->hasPlanet($player);
+        $proxyGenerator = new \Aspect\ProxyGenerator($cacheDir);
+        $aspect = new Aspect\Aspect($proxyGenerator);
+
+        $aspect->createAdvice(Fleet::clazz(), 'doTurn', $this->createEventAdvice($this->eventManager, Event::FLEET_MOVE));
+
+        $aspect->createAdvice(Planet::clazz(), 'setNumShips', $this->createEventAdvice($this->eventManager, Event::PLANET_CHANGE_SHIPS));
+        $aspect->createAdvice(Planet::clazz(), 'addShips', $this->createEventAdvice($this->eventManager, Event::PLANET_CHANGE_SHIPS));
+        $aspect->createAdvice(Planet::clazz(), 'removeShips', $this->createEventAdvice($this->eventManager, Event::PLANET_CHANGE_SHIPS));
+        $aspect->createAdvice(Planet::clazz(), 'setOwnerId', $this->createEventAdvice($this->eventManager, Event::PLANET_CHANGE_OWNER));
+
+        return $aspect;
     }
 
-    protected function getNextPlayerId()
+    protected function createEventAdvice($eventManager, $eventName)
     {
-        return count($this->players) + 1;
-    }
+        $eventAdvice = function($obj) use ($eventManager, $eventName) {
+            $event = new \Event\Event($eventName, $obj);
+            $eventManager->notify($event);
+        };
 
-    public function addPlayer(Player $player)
-    {
-        $id = $this->getNextPlayerId();
-        $player->setId($id);
-        $this->players[$id] = $player;
-        $this->eventManager->notify(new Event\Event(\Event\Event::CREATE_PLAYER, $player));
+        return $eventAdvice;
     }
 
     public function init()
     {
         $this->eventManager = new EventManager();
-        $proxyGenerator = new \Event\ProxyGenerator(__DIR__ . '/../cache');
-        $factory = new \Event\ObjectFactory($this->eventManager, $proxyGenerator);
+
+        $aspect = $this->createAspect($this->getCacheDir());
 
         $this->map = new Map();
-        $this->map->setObjectFactory($factory);
-        $this->map->load(new SimpleMapLoader(), '../maps/2/map1.txt');
+        $this->map->setAspect($aspect);
 
         $this->fleetManager = new FleetManager($this->map, $this->eventManager);
-        $this->fleetManager->setObjectFactory($factory);
-        $this->commandManager = new ServerCommandManager();
-        $this->eventManager->subscribe($this->commandManager);
+        $this->fleetManager->setAspect($aspect);
 
-        $this->combatLog = new CombatLog();
-        $this->eventManager->subscribe($this->combatLog);
+        $this->commandManager = $this->createCommandManager();
+        $this->commandManager->setAspect($aspect);
+        $this->eventManager->subscribe($this->commandManager);
 
         $this->registry = new Registry();
         $this->registry->setFleetManager($this->fleetManager);
         $this->registry->setMap($this->map);
-
-        $this->eventManager->notify(new Event\Event(\Event\Event::CREATE_WORLD, $this->registry));
-    }
-
-    public function getFleetManager()
-    {
-        return $this->fleetManager;
-    }
-
-    public function isGameOver()
-    {
-        return false;
-        /**
-         * @todo Player do nothing for a while
-         */
-        $countLivePlayers = 0;
-        foreach ($this->players as $player) {
-            if ($this->isAlive($player)) {
-                $countLivePlayers++;
-            }
-        }
-
-        return $countLivePlayers == 1;
-    }
-
-    public function getCombatLog()
-    {
-        return $this->combatLog->getLog();
-    }
-
-    public function doTurn()
-    {
-        $this->eventManager->notify(new Event\Event(\Event\Event::DO_TURN, $this->registry));
-        /**
-         * @var $player \Player
-         */
-        foreach ($this->players as $player) {
-            $this->commandManager->sendCommands($player);
-        }
-        $this->commandManager->flushCommands();
-
-        foreach ($this->players as $player) {
-            $this->commandManager->processCommands($player, $this->registry);
-        }
-        $this->map->doTurn();
-        $this->fleetManager->doTurn();
     }
 }

@@ -14,10 +14,23 @@ class ServerCommandManager extends CommandManager
     {
         $allow = array(
             'SendFleetCommand',
-            'HeartBeatCommand'
+            'HeartBeatCommand',
+            'MultiCommand'
         );
 
-        return in_array($command->getCommandName(), $allow);
+        if ($command->getCommandName() != 'MultiCommand') {
+            return in_array($command->getCommandName(), $allow);
+        }
+        /**
+         * @var $command \Command\Command\MultiCommand
+         * @var $singleCommand \Command\CommandInterface
+         */
+        foreach ($command->getCommandList() as $singleCommand) {
+            if (false == in_array($singleCommand->getCommandName(), $allow)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public function handle(Event $event)

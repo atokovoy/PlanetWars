@@ -5,7 +5,7 @@
  * @copyright 2012
  * @author Anton Tokovoy <barss.dev@gmail.com>
  */
-class FleetManager extends \Event\ObjectCreator
+class FleetManager extends \Aspect\AspectAware
 {
     protected $fleets = array();
 
@@ -92,9 +92,22 @@ class FleetManager extends \Event\ObjectCreator
 
         $distance = $this->map->calcDistance($source, $target);
 
-        $fleet = $this->getObjectFactory()->createFleet($player->getId(), $source, $target, $numShips, $distance);
+        return $this->createFleet($player->getId(), $source, $target, $numShips, $distance);
+    }
 
-        return $fleet;
+    /**
+     * @param $playerId
+     * @param Entity\Planet $source
+     * @param Entity\Planet $target
+     * @param $numShips
+     * @param $distance
+     * @return \Entity\Fleet
+     */
+    public function createFleet($playerId, \Entity\Planet $source, \Entity\Planet $target, $numShips, $distance)
+    {
+        $fleet = new \Entity\Fleet($playerId, $source, $target, $numShips, $distance);
+
+        return $this->getAspect()->introduce($fleet);
     }
 
     /**

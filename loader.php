@@ -7,7 +7,7 @@
  
 function loader($className) {
     $includeName = str_replace('\\', '/', $className);
-    include $includeName . '.php';
+    require 'src' .DIRECTORY_SEPARATOR . $includeName . '.php';
 }
 
 spl_autoload_register('loader');

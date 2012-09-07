@@ -1,5 +1,5 @@
 <?php
-namespace  Event;
+namespace Aspect;
 
 /**
  * @copyright 2012
@@ -50,7 +50,7 @@ class ProxyGenerator
         return $declaration;
     }
 
-    protected function getMethodDeclaration(\ReflectionMethod $method, array $binding = array())
+    protected function getMethodDeclaration($className, \ReflectionMethod $method, array $joinPoints = array())
     {
         $name = $method->getName();
         $parameters = $method->getParameters();
@@ -62,9 +62,10 @@ class ProxyGenerator
         $body = '$args = func_get_args();'."\n";
         $body.= sprintf('$result = call_user_func_array(array($this->obj, "%s"), $args);', $name) . "\n";
 
-        if (isset($binding[$name])) {
-            $body.= sprintf('$event = new \Event\Event("%s", $this->obj);', $binding[$name]) . "\n";
-            $body.= '$this->observer->notify($event);' . "\n";
+        if (in_array($name, $joinPoints)) {
+            //$body.= sprintf('$event = new \Event\Event("%s", $this->obj);', $joinPoints[$name]) . "\n";
+            //$body.= '$this->observer->notify($event);' . "\n";
+            $body.= sprintf('$this->getAspect()->callAdvice("%s", "%s", array_merge(array($this->obj), $args));', $className, $name) . "\n";
         }
 
         $body.= 'return $result;';
@@ -77,12 +78,12 @@ class ProxyGenerator
         $declaration = '<?php
 
 /**
- * @copyright 2012 Modera NET2
- * @author Anton Tokovoy <anton.tokovoy@modera.net>
+ * @copyright 2012
+ * @author Anton Tokovoy <barss.dev@gmail.com>
  */
 class %s extends %s
 {
-    private $observer;
+    private $aspect;
 
     private $obj;
 
@@ -91,15 +92,26 @@ class %s extends %s
         $this->obj = $obj;
     }
 
-    public function setObserver($observer)
+    public function setAspect($aspect)
     {
-        $this->observer = $observer;
+        $this->aspect = $aspect;
     }
+
+    public function getAspect()
+    {
+        return $this->aspect;
+    }
+
 ';
         return $declaration . implode("\n\n", $methodsDeclaration). "}\n";
     }
 
-    public function generateProxy($obj, array $binding = array())
+    /**
+     * @param $obj
+     * @param array $joinPoints
+     * @return AspectAwareInterface
+     */
+    public function generateProxy($obj, array $joinPoints = array())
     {
         $fqcn = get_class($obj);
         $proxyName = $this->getProxyName($fqcn);
@@ -116,7 +128,7 @@ class %s extends %s
                     continue;
                 }
 
-                $declarations[] = $this->getMethodDeclaration($method, $binding) ."\n\n";
+                $declarations[] = $this->getMethodDeclaration($fqcn, $method, $joinPoints) ."\n\n";
             }
             $template = $this->createProxyDeclarationTemplate($declarations);
             file_put_contents($proxyFilename, sprintf($template, $proxyName, $fqcn));

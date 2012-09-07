@@ -4,19 +4,19 @@
  * @copyright 2012
  * @author Anton Tokovoy <barss.dev@gmail.com>
  */
-abstract class Player
+class Player extends World
 {
     /**
      * @var int
      */
     protected $id;
 
+    /**
+     * @var Transport\Transport
+     */
     protected $transport;
 
-    /**
-     * @param int $id
-     */
-    public function __construct(Transport\Transport $transport)
+    public function setTransport(Transport\Transport $transport)
     {
         $this->transport = $transport;
     }
@@ -44,5 +44,19 @@ abstract class Player
         return $this->id;
     }
 
-    abstract public function doTurn();
+    /**
+     * @return \Command\CommandManager
+     */
+    protected function createCommandManager()
+    {
+        // TODO: Implement createCommandManager() method. Abstract here
+    }
+
+    /**
+     * @return string
+     */
+    public function getCacheDir()
+    {
+        // TODO: Implement getCacheDir() method.
+    }
 }

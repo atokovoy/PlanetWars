@@ -43,8 +43,6 @@ class CombatLog implements Listener
             case Event::DO_TURN:
                 $this->turnId++;
                 $this->log['combat'][$this->turnId] = array('turnId' => $this->turnId + 1);
-
-                file_put_contents('log.data', var_export($this->log, 1));
                 break;
             case Event::FLEET_ADD:
                 /**

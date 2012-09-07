@@ -115,4 +115,9 @@ class Fleet
     {
         return $this->id;
     }
+
+    public static function clazz()
+    {
+        return get_called_class();
+    }
 }

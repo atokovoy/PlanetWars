@@ -7,7 +7,7 @@ use Event\Listener;
  * @copyright 2012
  * @author Anton Tokovoy <barss.dev@gmail.com>
  */
-abstract class CommandManager implements Listener
+abstract class CommandManager extends \Aspect\AspectAware implements Listener
 {
     /**
      * @var CommandPool
@@ -32,26 +32,25 @@ abstract class CommandManager implements Listener
             print "Player sent nothing\n";
             return false;
         }
-        $command = Command\SimpleCommand::create($commandDef);
+        $command = Command\MultiCommand::create($commandDef);
         if (!$this->isValid($command)) {
             return false;
         }
 
-        //print sprintf("Received %s command\n", get_class($command));
+        print sprintf("Received %s command\n", get_class($command));
         $command->execute($player, $registry);
     }
 
     public function sendCommands(\Player $player)
     {
         $commands = $this->commandPool->findAllByPlayer($player->getId());
-        foreach ($commands as $command) {
-            //print sprintf("Send %s command\n", get_class($command));
-            /**
-             * @var $command \Command\CommandInterface
-             */
-            $data = $command->toString();
-            $player->sendCommandDef($data);
+        if (empty($commands)) {
+            return;
         }
+        $command = new Command\MultiCommand();
+        $command->setCommandList($commands);
+        $player->sendCommandDef($command->toString());
+        print sprintf("Send %s command\n", get_class($command));
     }
 
     public function flushCommands()
