@@ -38,7 +38,7 @@ class RandomBot extends Client
         // (4) Send half the ships from source to dest.
         if ($source != null && $target != null) {
 
-            $numShips = $source->getNumShips() / 2;
+            $numShips = floor($source->getNumShips() / 2);
             $this->issueOrder($source, $target, $numShips);
         }
     }
