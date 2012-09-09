@@ -20,9 +20,9 @@ class SimpleMapLoader implements Iterator
         return array(
             'x' => $data[1],
             'y' => $data[2],
-            'player' => $data[3],
-            'ships' => $data[4],
-            'rate' => $data[5]
+            'player' => (int) trim($data[3]),
+            'ships'  => (int) trim($data[4]),
+            'rate'   => (int) trim($data[5])
         );
     }
 
