@@ -81,7 +81,18 @@ abstract class World
         $aspect->createAdvice(Planet::clazz(), 'removeShips', $this->createEventAdvice($this->eventManager, Event::PLANET_CHANGE_SHIPS));
         $aspect->createAdvice(Planet::clazz(), 'setOwnerId', $this->createEventAdvice($this->eventManager, Event::PLANET_CHANGE_OWNER));
 
-        $aspect->createAdvice(Fleet::clazz(), 'doTurn', $this->createLoggerAdvice("Fleet does next turn", Logger::LEVEL_INFO));
+        $aspect->createAdvice(FleetManager::clazz(), 'doTurn', $this->createLoggerAdvice("Fleet does next turn", Logger::LEVEL_INFO));
+        $aspect->createAdvice(FleetManager::clazz(), 'addFleet', $this->createFleetAwareLoggerAdvice("Add new fleet", Logger::LEVEL_INFO));
+        $aspect->createAdvice(FleetManager::clazz(), 'removeFleet', $this->createFleetAwareLoggerAdvice("Land a fleet ", Logger::LEVEL_INFO));
+
+        $aspect->createAdvice(Fleet::clazz(), 'doTurn', $this->createFleetAwareLoggerAdvice("Move the fleet", Logger::LEVEL_INFO));
+
+        $aspect->createAdvice(Planet::clazz(), 'setNumShips', $this->createPlanetAwareLoggerAdvice("Ships quantity were changed", Logger::LEVEL_INFO));
+        $aspect->createAdvice(Planet::clazz(), 'addShips', $this->createPlanetAwareLoggerAdvice("Ships quantity were changed", Logger::LEVEL_INFO));
+        $aspect->createAdvice(Planet::clazz(), 'removeShips', $this->createPlanetAwareLoggerAdvice("Ships quantity were changed", Logger::LEVEL_INFO));
+        $aspect->createAdvice(Planet::clazz(), 'setOwnerId', $this->createPlanetAwareLoggerAdvice("Owner was changed", Logger::LEVEL_INFO));
+
+
 
         return $aspect;
     }
@@ -97,6 +108,46 @@ abstract class World
         };
 
         return $eventAdvice;
+    }
+
+    protected function createPlanetAwareLoggerAdvice($message, $logLevel)
+    {
+        $logger = $this->getLogger();
+        $loggerAdvice = function($planet) use ($logger, $logLevel, $message) {
+            /**
+             * @var $logger Logger
+             * @var $planet \Entity\Planet
+             */
+            $planetDef = "[id: %s, ownerId: %s, numShips: %s, growthRate: %s, x: %s, y: %s]";
+            $planetDef = sprintf($planetDef, $planet->getId(), $planet->getOwnerId(), $planet->getNumShips(),
+                $planet->getGrowthRate(), $planet->getX(), $planet->getY()
+            );
+            $logger->write($message. " " . $planetDef, $logLevel);
+        };
+
+        return $loggerAdvice;
+    }
+
+    protected function createFleetAwareLoggerAdvice($message, $logLevel)
+    {
+        $logger = $this->getLogger();
+        $loggerAdvice = function($obj, $fleet = null) use ($logger, $logLevel, $message) {
+            if (null == $fleet) {
+                $fleet = $obj;
+            }
+            /**
+             * @var $logger Logger
+             * @var $fleet \Entity\Fleet
+             */
+            $fleetDef = "[id: %s, playerId: %s, numShips: %s, source: %s, target: %s, totalTripLength: %s, turnsRemaining: %s]";
+            $fleetDef = sprintf($fleetDef, $fleet->getId(), $fleet->getPlayerId(), $fleet->getNumShips(),
+                $fleet->getSource()->getId(), $fleet->getTarget()->getId(), $fleet->getTotalTripLength(),
+                $fleet->getTurnsRemaining()
+            );
+            $logger->write($message. " " . $fleetDef, $logLevel);
+        };
+
+        return $loggerAdvice;
     }
 
     protected function createLoggerAdvice($message, $logLevel)
@@ -121,11 +172,14 @@ abstract class World
 
         $aspect = $this->createAspect($this->getCacheDir());
 
-        $this->map = $aspect->introduce(new Map());
+        $this->map = new Map();
         $this->map->setAspect($aspect);
+        $this->map = $aspect->introduce($this->map);
 
-        $this->fleetManager = $aspect->introduce(new FleetManager($this->map, $this->eventManager));
+
+        $this->fleetManager = new FleetManager($this->map, $this->eventManager);
         $this->fleetManager->setAspect($aspect);
+        $this->fleetManager = $aspect->introduce($this->fleetManager);
 
         $this->commandManager = $this->createCommandManager();
         $this->commandManager->setAspect($aspect);

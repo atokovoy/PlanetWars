@@ -29,7 +29,7 @@ class ProxyGenerator
     {
         $declaration = '';
         if ($param->getClass() != '') {
-            $declaration.= $param->getClass() .' ';
+            $declaration.= $param->getClass()->getName() .' ';
         }
         if ($param->isArray()) {
             $declaration.= 'array ';
@@ -42,6 +42,8 @@ class ProxyGenerator
             $defVal = $param->getDefaultValue();
             if (is_array($defVal)) {
                 $declaration.= ' = array()';
+            } elseif (is_null($defVal)) {
+                $declaration.= ' = null';
             } else {
                 $declaration.= ' = ' . $defVal;
             }
@@ -81,14 +83,21 @@ class ProxyGenerator
  */
 class %s extends %s
 {
-    private $aspect;
-
     private $obj;
 
     public function __construct($obj)
     {
         $this->obj = $obj;
     }
+
+';
+        return $declaration . implode("\n\n", $methodsDeclaration). "}\n";
+    }
+
+    protected function createGetterAndSetter()
+    {
+        return '
+    private $aspect;
 
     public function setAspect($aspect)
     {
@@ -99,9 +108,7 @@ class %s extends %s
     {
         return $this->aspect;
     }
-
 ';
-        return $declaration . implode("\n\n", $methodsDeclaration). "}\n";
     }
 
     /**
@@ -115,14 +122,19 @@ class %s extends %s
         $proxyName = $this->getProxyName($fqcn);
         $proxyFilename = $this->getProxyFilename($proxyName);
         if (false == file_exists($proxyFilename)) {
-
-            $reflection = new \ReflectionClass($obj);
             $declarations = array();
+            $reflection = new \ReflectionClass($obj);
+            if (false == $reflection->implementsInterface('Aspect\\AspectAwareInterface')) {
+                $declarations[] = $this->createGetterAndSetter();
+            }
             foreach ($reflection->getMethods() as $method) {
                 /**
                  * @var $method \ReflectionMethod
                  */
                 if ((!$method->isPublic()) || $method->isStatic() || $method->isConstructor()) {
+                    continue;
+                }
+                if (in_array($method->getName(), array('getAspect', 'setAspect'))) {
                     continue;
                 }
 
@@ -132,7 +144,7 @@ class %s extends %s
             file_put_contents($proxyFilename, sprintf($template, $proxyName, $fqcn));
         }
 
-        include_once($proxyFilename);
+        require_once($proxyFilename);
 
         $proxy = new $proxyName($obj);
         return $proxy;

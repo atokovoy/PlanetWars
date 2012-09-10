@@ -192,4 +192,9 @@ class FleetManager extends \Aspect\AspectAware
 
         $this->processBattle();
     }
+
+    public static function clazz()
+    {
+        return get_called_class();
+    }
 }

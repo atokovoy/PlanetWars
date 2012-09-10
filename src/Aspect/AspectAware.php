@@ -5,7 +5,7 @@ namespace Aspect;
  * @copyright 2012
  * @author Anton Tokovoy <barss.dev@gmail.com>
  */
-class AspectAware
+class AspectAware implements AspectAwareInterface
 {
     /**
      * @var Aspect
