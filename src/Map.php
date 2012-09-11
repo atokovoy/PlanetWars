@@ -168,6 +168,9 @@ class Map extends \Aspect\AspectAware
             if ($planet->getGrowthRate() == 0) {
                 continue;
             }
+            if ($planet->getOwnerId() == 0) {
+                continue;
+            }
             $planet->addShips($planet->getGrowthRate());
         }
     }
