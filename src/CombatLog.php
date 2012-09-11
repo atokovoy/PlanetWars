@@ -54,6 +54,7 @@ class CombatLog implements Listener
                 }
                 $this->log['combat'][$this->turnId]['order'][] = array(
                     'fleetId' => $fleet->getId(),
+                    'ownerId' => $fleet->getPlayerId(),
                     'srcPlanet' => $fleet->getSource()->getId(),
                     'targetPlanet' => $fleet->getTarget()->getId(),
                     'ships' => $fleet->getNumShips(),

@@ -163,14 +163,18 @@ class FleetManager extends \Aspect\AspectAware
                 //print "now battle is: \n";
                 //print_r($comFleets);
             }
+            //print "And we decide: \n";
             if (count($comFleets) == 0) {
                 //draw
                 //print "It's a draw \n";
                 $targetPlanet->setNumShips(0);
             } else {
                 //print "Planet change owner \n";
-                $numShips = current($comFleets);
-                $ownerId = key($comFleets);
+                $keys = array_keys($comFleets);
+                $ownerId = $keys[0];
+                $numShips = $comFleets[$ownerId];
+
+                //print $numShips . " " . $ownerId . "\n";
                 $targetPlanet->setNumShips($numShips);
                 if ($ownerId != $targetPlanet->getOwnerId()) {
                     $targetPlanet->setOwnerId($ownerId);

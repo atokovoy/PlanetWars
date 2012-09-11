@@ -16,7 +16,7 @@ $server->init();
 $server->start(8181);
 
 
-$limitTurns = 1000;
+$limitTurns = 5000;
 $turn = 0;
 while (($turn < $limitTurns) && !$server->isGameOver()) { //!$server->isGameOver()
     $server->doTurn();
@@ -31,5 +31,5 @@ if (!$server->isGameOver()) {
 } else {
     printf("Player ID %s won\n", $server->getWinner()->getId());
 }
-
+//file_put_contents('combat.log', Util\NiceJsonConverter::convert($server->getCombatLog()));
 //print_r($server->getCombatLog());
