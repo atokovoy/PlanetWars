@@ -127,7 +127,7 @@ class Map extends \Aspect\AspectAware
      */
     public function calcDistance(Planet $src, Planet $dst)
     {
-        $dx = $src->getX() - $dst->getY();
+        $dx = $src->getX() - $dst->getX();
         $dy = $src->getY() - $dst->getY();
 
         return ceil(sqrt($dx * $dx + $dy * $dy));
