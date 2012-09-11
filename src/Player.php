@@ -11,6 +11,8 @@ class Player extends World
      */
     protected $id;
 
+    protected $winnerId;
+
     /**
      * @var Transport\Transport
      */
@@ -42,6 +44,16 @@ class Player extends World
     public function getId()
     {
         return $this->id;
+    }
+
+    public function setWinnerId($id)
+    {
+        $this->winnerId = $id;
+    }
+
+    public function getWinnerId()
+    {
+        return $this->winnerId;
     }
 
     /**

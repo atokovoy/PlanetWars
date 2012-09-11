@@ -87,9 +87,9 @@ abstract class World
 
         $aspect->createAdvice(Fleet::clazz(), 'doTurn', $this->createFleetAwareLoggerAdvice("Move the fleet", Logger::LEVEL_INFO));
 
-        $aspect->createAdvice(Planet::clazz(), 'setNumShips', $this->createPlanetAwareLoggerAdvice("Ships quantity were changed", Logger::LEVEL_INFO));
-        $aspect->createAdvice(Planet::clazz(), 'addShips', $this->createPlanetAwareLoggerAdvice("Ships quantity were changed", Logger::LEVEL_INFO));
-        $aspect->createAdvice(Planet::clazz(), 'removeShips', $this->createPlanetAwareLoggerAdvice("Ships quantity were changed", Logger::LEVEL_INFO));
+        $aspect->createAdvice(Planet::clazz(), 'setNumShips', $this->createPlanetAwareLoggerAdvice("Ships quantity were changed via (set)", Logger::LEVEL_INFO));
+        $aspect->createAdvice(Planet::clazz(), 'addShips', $this->createPlanetAwareLoggerAdvice("Ships quantity were changed via (add)", Logger::LEVEL_INFO));
+        $aspect->createAdvice(Planet::clazz(), 'removeShips', $this->createPlanetAwareLoggerAdvice("Ships quantity were changed (remove)", Logger::LEVEL_INFO));
         $aspect->createAdvice(Planet::clazz(), 'setOwnerId', $this->createPlanetAwareLoggerAdvice("Owner was changed", Logger::LEVEL_INFO));
 
 

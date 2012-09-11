@@ -165,7 +165,7 @@ class Map extends \Aspect\AspectAware
          * @var $planet \Entity\Planet
          */
         foreach ($this->planets as $planet) {
-            if ($planet->getOwnerId()) {
+            if ($planet->getGrowthRate() == 0) {
                 continue;
             }
             $planet->addShips($planet->getGrowthRate());

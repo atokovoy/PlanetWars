@@ -149,20 +149,26 @@ class FleetManager extends \Aspect\AspectAware
             }
             $targetPlanet = $fleet->getTarget();
             $comFleets[0] = $targetPlanet->getNumShips();
-            asort($comFleets);
+            arsort($comFleets);
+            //print_r($comFleets);
             while (count($comFleets) > 1) {
                 $minFleetShips = array_pop($comFleets);
+                //print "Minimum is ". $minFleetShips . "\n";
                 foreach ($comFleets as $playerId => &$numShips) {
                     $numShips -= $minFleetShips;
                     if ($numShips <= 0) {
                         unset($comFleets[$playerId]);
                     }
                 }
+                //print "now battle is: \n";
+                //print_r($comFleets);
             }
             if (count($comFleets) == 0) {
                 //draw
+                //print "It's a draw \n";
                 $targetPlanet->setNumShips(0);
             } else {
+                //print "Planet change owner \n";
                 $numShips = current($comFleets);
                 $ownerId = key($comFleets);
                 $targetPlanet->setNumShips($numShips);

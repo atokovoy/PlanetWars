@@ -11,6 +11,8 @@ abstract class Client extends Player implements GameInterface
 {
     protected $cacheDir;
 
+    protected $socket;
+
     protected function createCommandManager()
     {
         return new ClientCommandManager();
@@ -31,19 +33,27 @@ abstract class Client extends Player implements GameInterface
         $socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
         socket_set_block($socket);
         socket_connect($socket, $ip, $port);
+        $this->socket = $socket;
         $transport = new \Transport\SocketTransport($socket);
         $this->setTransport($transport);
     }
 
+    public function __destruct()
+    {
+        if ($this->socket) {
+            socket_close($this->socket);
+        }
+    }
+
     public function run()
     {
-        while (true) {
+        while ($this->getWinnerId() === null) {
             $this->commandManager->processCommands($this, $this->registry);
             $this->doTurn();
             $this->eventManager->notify(new Event(Event::HEARTBEAT, $this->registry));
             $this->commandManager->sendCommands($this);
             $this->commandManager->flushCommands();
-            sleep(1);
+            usleep(100);
         }
     }
 

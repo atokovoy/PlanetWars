@@ -50,3 +50,8 @@ $bot->setCacheDir('cache');
 $bot->connect(8181);
 $bot->init();
 $bot->run();
+if ($bot->getWinnerId() !== null) {
+    printf("Player %s won\n", $bot->getWinnerId());
+} else {
+    print "Server Terminated\n";
+}

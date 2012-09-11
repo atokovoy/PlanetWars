@@ -37,7 +37,7 @@ abstract class CommandManager extends \Aspect\AspectAware implements Listener
             return false;
         }
 
-        print sprintf("Received %s command\n", get_class($command));
+        //print sprintf("Received %s command\n", get_class($command));
         $command->execute($player, $registry);
     }
 
@@ -50,7 +50,7 @@ abstract class CommandManager extends \Aspect\AspectAware implements Listener
         $command = new Command\MultiCommand();
         $command->setCommandList($commands);
         $player->sendCommandDef($command->toString());
-        print sprintf("Send %s command\n", get_class($command));
+        //print sprintf("Send %s command\n", get_class($command));
     }
 
     public function flushCommands()

@@ -23,6 +23,8 @@ class Server extends World implements GameInterface
 
     protected $cacheDir;
 
+    protected $socket;
+
     /**
      * @return \Command\CommandManager
      */
@@ -43,7 +45,7 @@ class Server extends World implements GameInterface
         socket_listen($socket);
         socket_set_nonblock($socket);
         $nPlayers = $this->maxPlayers;
-
+        $this->socket = $socket;
         while($nPlayers) {
             if (($connection = @socket_accept($socket)) !== false) {
                 echo "Client has connected\n";
@@ -55,6 +57,22 @@ class Server extends World implements GameInterface
             }
             sleep(1);
         }
+    }
+
+    public function __destruct()
+    {
+        if ($this->socket) {
+            socket_close($this->socket);
+        }
+    }
+
+    public function stop()
+    {
+        $this->eventManager->notify(new Event(Event::GAME_OVER, $this->getWinner()));
+        foreach ($this->players as $player) {
+            $this->commandManager->sendCommands($player);
+        }
+        $this->commandManager->flushCommands();
     }
 
     public function init()
@@ -70,7 +88,8 @@ class Server extends World implements GameInterface
 
     protected function isAlive(Player $player)
     {
-        return $this->map->hasPlanet($player);
+        $playerFleets = $this->fleetManager->findAllByPlayer($player);
+        return ($this->map->hasPlanet($player) || !empty($playerFleets));
     }
 
     protected function getNextPlayerId()
@@ -111,6 +130,20 @@ class Server extends World implements GameInterface
         }
 
         return $countLivePlayers == 1;
+    }
+
+    /**
+     * @return Player|false
+     */
+    public function getWinner()
+    {
+        foreach ($this->players as $player) {
+            if ($this->isAlive($player)) {
+                return $player;
+            }
+        }
+
+        return false;
     }
 
     /**

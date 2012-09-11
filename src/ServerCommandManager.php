@@ -94,6 +94,19 @@ class ServerCommandManager extends CommandManager
                 $command->setPlanet($planet);
                 $this->commandPool->addCommand($command);
                 break;
+            case Event::GAME_OVER:
+                /**
+                 * @var $player Player
+                 */
+                $player = $event->getObject();
+                $command = new CommandImpl\GameoverCommand();
+                if ($player) {
+                    $command->setWinId($player->getId());
+                } else {
+                    $command->setWinId(null);
+                }
+                $this->commandPool->addCommand($command);
+                break;
         }
     }
 }

@@ -16,6 +16,7 @@ class Event
     const HEARTBEAT = 'heartbeat';
     const CREATE_WORLD = 'create_world';
     const CREATE_PLAYER = 'create_player';
+    const GAME_OVER = 'game_over';
 
     protected $name;
 
