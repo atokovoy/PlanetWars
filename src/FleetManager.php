@@ -148,7 +148,12 @@ class FleetManager extends \Aspect\AspectAware
                 }
             }
             $targetPlanet = $fleet->getTarget();
-            $comFleets[0] = $targetPlanet->getNumShips();
+            if (isset($comFleets[$targetPlanet->getOwnerId()])) {
+                $comFleets[$targetPlanet->getOwnerId()] += $targetPlanet->getNumShips();
+            } else {
+                $comFleets[$targetPlanet->getOwnerId()] = $targetPlanet->getNumShips();
+            }
+
             arsort($comFleets);
             //print_r($comFleets);
             while (count($comFleets) > 1) {
