@@ -1,0 +1,929 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <style>
+      body, div, canvas {
+        margin: 0px;
+        padding: 0px;
+      }
+      /**
+      #warcontainer{
+          margin: -505px auto 0 auto; width:1000px; height:500px;
+      }
+      
+      #bgcontainer{
+          margin: 10px auto 0px auto; width:1000px; height:500px; border:5px solid rgba(0,0,0,0.5)
+      }
+      **/
+      
+      #warcontainer{
+          width:100%; height:100%;
+      }
+      
+      #bgcontainer{
+          width:100%; height:100%;
+      }
+      
+      #animation-container {
+          position:absolute;top:0;
+      }
+      
+      .centered-text {
+		  text-align:center
+	  } 
+      
+      #welcome-screen .btn {
+          margin:5px; width:200px
+      }
+      
+      
+	    #server-screen-teams-form{
+	        padding:5px;
+	    }
+	    
+	    #server-screen-teams-form canvas{
+	        background:#00;
+	        width:100%;
+	        border: 5px solid #DDD;
+            margin:-5px 0 10px -5px
+	    }
+	   
+	   .modal-header{
+	       cursor:pointer;
+	   }   
+        
+    </style>
+    
+    
+    <!-- Le styles -->
+    <link href="assets/css/bootstrap.css" rel="stylesheet">
+    <link href="assets/css/bootstrap-responsive.css" rel="stylesheet">
+    
+    <script type="text/javascript" src="assets/js/jquery.js"></script>
+    <script type="text/javascript" src="assets/js/jquery-ui.min.js"></script>
+    <script type="text/javascript" src="assets/js/bootstrap.js"></script>
+    
+    <script type="text/javascript" src="js/native/team.js"></script>
+    <script type="text/javascript" src="js/native/game.js"></script>
+    <script type="text/javascript" src="js/native/explosion.js"></script>
+    <script type="text/javascript" src="js/native/planet.js"></script>
+    <script type="text/javascript" src="js/native/space.js"></script>
+    <script type="text/javascript" src="js/native/squadron.js"></script>
+    <script type="text/javascript" src="js/native/roundRect.js"></script>
+    <script type="text/javascript" src="js/native/animation.js"></script>
+    <script type="text/javascript" src="js/native/imagePreloader.js"></script>
+    <script type="text/javascript" src="js/native/generator.js"></script>
+    <script type="text/javascript" src="js/native/animation.js"></script>
+    <script type="text/javascript" src="js/helpers/coordinates.js"></script>
+    <script type="text/javascript" src="js/native/combatLog.js"></script>
+    <script type="text/javascript" src="js/strategy/half.js"></script>
+    <script type="text/javascript" src="js/strategy/bot.js"></script>
+    <script type="text/javascript" src="js/strategy/neutrality.js"></script>
+    <script type="text/javascript" src="js/strategy/log.js"></script>
+        
+    <script>
+    
+    var pw = {};
+    
+    window.onload = function() {
+    	
+    	var imageLibrary = [];
+
+        var images = [
+            ['planet1', 'svg/venus.svg'],
+            ['planet2', 'svg/moon.svg'],
+            ['planet3', 'svg/jupiter.svg'],
+            ['planet4', 'svg/mars.svg'],
+            ['planet5', 'svg/venus2.svg'],
+            ['planet6', 'svg/mercury2.svg'],
+            ['planet7', 'svg/mercury2.svg']
+        ];
+        
+        imagePreloader(images, function(imageLibrary) {
+            
+            //Initializing the canvas
+            var canvas = document.getElementById("warcanvas");
+            canvas.height = document.body.scrollHeight;
+            canvas.width = document.body.scrollWidth;
+              
+            //Initializing the wcanvas
+            var wcanvas = document.getElementById("bgcanvas");
+            wcanvas.height = document.body.scrollHeight;
+            wcanvas.width = document.body.scrollWidth;
+            
+            var teams = [
+                new team('white', 0),
+                new team('yellow', 1),
+                new team('red',2),
+                new team('#4BFF30',3),
+                new team('blue',4),
+                new team('orange',5)
+            ];
+            
+            var bgs = [
+                imageLibrary.planet1, 
+                imageLibrary.planet2, 
+                imageLibrary.planet3, 
+                imageLibrary.planet4, 
+                imageLibrary.planet5, 
+                imageLibrary.planet6, 
+                imageLibrary.planet7,
+            ];
+            
+            var workflow = null;
+
+            $('#welcome-screen, #generator-screen, #server-screen, #server-screen-teams, #server-screen-join, #server-choose-window, #wait-screen').modal({
+                keyboard: false,
+                show: false,
+                backdrop:false
+            });
+            
+            
+            $('#welcome-screen .generate-button').click(function(){
+            	$('#generator-screen').modal('show');
+            });
+            $('#welcome-screen .start-button').click(function(){
+            	
+                $('#wait-screen').modal('show');
+                
+                var params = {
+                    action: "maps"
+                }
+                
+                $.post("index.php", params, function(result){
+                    
+                    $('#wait-screen').modal('hide');
+                    
+                    if (result.error) {
+                        
+                        console.debug('failed', result);
+                        $('#welcome-screen').modal('show');
+                        
+                    } else {
+                        
+                        var options = [];
+                        
+                        if (result.items.length > 0) {
+                             for(var i = 0; i < result.items.length; i++){ 
+                                 options.push('<option value="' + result.items[i] + '">' + result.items[i] + '</option>');
+                             }
+                        }
+                                                
+                        $('#server-screen select').html(options.join(''));
+                        
+                        $('#server-screen').modal('show');
+                        
+                    }
+                    
+                }, "json");
+                
+            });
+          
+            
+            
+            $('#welcome-screen .join-button, #server-choose-window .refresh-button').click(function(){
+
+
+                $('#wait-screen').modal('show');
+                
+                var params = {
+                    action: "servers"
+                }
+                
+                $.post("index.php", params, function(result){
+                    
+                    $('#wait-screen').modal('hide');
+                    
+                    if (result.error) {
+                        
+                        console.debug('failed', result);
+                        $('#welcome-screen').modal('show');
+                        
+                    } else {
+                        
+                    	var options = [];
+                    	
+                    	if (result.items.length > 0) {
+                    		 for(var i = 0; i < result.items.length; i++){ 
+                                 options.push('<option value="' + result.items[i].session + '">' + result.items[i].session + '( ' + result.items[i].teams.length + ' teams)</option>');
+                             }
+                    	}
+                    	                              
+                    	$('#server-choose-window select').html(options.join(''));
+                        
+                    	$('#server-choose-window').modal('show');
+                        
+                    }
+                    
+                }, "json");
+                
+            
+            });
+            
+            $('#server-screen .back-button, #server-choose-window .back-button').click(function(){
+            	$('#welcome-screen').modal('show');
+            });
+            
+
+            
+            $('#server-screen .next-button').click(function(){
+            	
+            	$('#wait-screen').modal('show');
+            	
+            	var params = {
+                    action: "init", 
+                    map: $('#server-map').val()
+            	}
+            	
+            	$.post("index.php", params, function(result){
+            		
+            		$('#wait-screen').modal('hide');
+            		
+            		if (result.error) {
+            			
+            			console.debug('failed', result);
+            			
+            		} else {
+
+            			// build map
+            			var planets = [], wteams = [], pos, bg;
+                        var map = coordinatesSystem.recalculateMap(result.map, canvas.width, canvas.height);
+
+                        for (var i = 0; i < map.length; i++) {
+                        	pos = map[i];
+                        	wteams[pos.player] = teams[pos.player];
+                            bg = bgs[Math.floor(Math.random()*bgs.length)];
+                        	planets.push(new planet(pos.id, pos.x, pos.y, pos.rate, teams[pos.player], bg, pos.ships, pos.radius));
+                        }
+
+                        workflow = {
+                            session: result.session,
+                            team:    1,
+                            map:     result.map,
+                            game:    new game(canvas, wcanvas, wteams, planets)
+                        }
+                        
+
+                        var tpl = function(id, color, teams) {
+
+                        	var options = [
+                        	    '<option value="Neutrality" '+((id == 0)?'selected="selected"':'')+'>Neutrality</option>',
+                                '<option value="Player" '+((id != 0)?'selected="selected"':'')+'>Webservice Player</option>',
+                                '<option value="Half">Bot (half)</option>'
+                            ];
+
+	                        return [
+	                         '<div class="control-group">',
+		                        '<label class="control-label" for="server-team-', id, '"><span>Team ', (1 + id), '</span></label>',
+		                        '<div class="controls">',
+		                           '<select  style="background:',color,'" id="server-team-', id, '" name="team[', id, ']">',
+		                               options.join(''),
+		                           '</select>',
+		                         '</div>',
+		                     '</div>'
+		                     ].join('');
+                        }
+
+                        var html = [];
+                        for(var i = 0; i < wteams.length; i++){
+                            html.push(tpl(i, wteams[i].color, wteams));
+                        }
+
+                        $('#server-screen-teams-form').html(html.join(''));
+                        /**
+                        var newCanvas = document.createElement('canvas');
+                        newCanvas.height = canvas.height;
+                        newCanvas.width  = canvas.width;
+
+                        var backCtx = newCanvas.getContext('2d');
+                        backCtx.drawImage(wcanvas, 0,0);
+                        backCtx.drawImage(canvas, 0,0);
+
+                        newCanvas.style.backgroundColor = '#000';
+                        newCanvas.style.width = '100%';
+
+                        $('#server-screen-teams .map').html(newCanvas);
+                        **/
+                        $('#server-screen-teams').modal('show');
+            			
+            		}
+            		
+                }, "json");
+            	
+            });
+            
+            $('#server-screen-teams .back-button').click(function(){
+            	$('#server-screen').modal('show');                
+            }); 
+            
+
+                
+            $('#server-screen-teams .next-button').click(function(){
+
+                if ($('#server-screen-teams-tab1').hasClass('active')) {
+
+                    var params = {
+                        action: "create",
+                        map: workflow.map
+                    }
+
+                    $('#server-screen-teams-form select').each(function(id, el){
+                        params[$(el).attr('name')] = $(el).val();
+                    });
+
+                    $('#wait-screen').modal('show');
+
+                    $.post("index.php", params, function(result){
+
+                        $('#wait-screen').modal('hide');
+
+                        if (result.error) {
+                            $('#server-screen-teams').modal('show');
+                        } else if (result.teams) {
+
+                            workflow.session = result.session;
+                            workflow.game.world.log = new combatLog(newresult.data, workflow.game.world);
+
+                            var teams = workflow.game.world.teams;
+
+                            for(var i = 0; i < teams.length; i++) {
+                                var strategy = new strategies[result.teams[i].strategy.type](result.teams[i].strategy);
+                                teams[i].setStrategy(strategy);
+                            }
+
+                            workflow.game.play();
+                            $('#navbar').removeClass('hide');
+
+                        } else {
+
+                            workflow.session = result.session;
+
+                            /**
+                            var newCanvas = document.createElement('canvas');
+                            newCanvas.height = canvas.height;
+                            newCanvas.width  = canvas.width;
+
+                            var backCtx = newCanvas.getContext('2d');
+                            backCtx.drawImage(wcanvas, 0,0);
+                            backCtx.drawImage(canvas, 0,0);
+
+                            newCanvas.style.backgroundColor = '#000';
+                            newCanvas.style.width = '100%';
+
+                            $('#server-screen-join .map').html(newCanvas);
+                            **/
+
+                            $('#server-screen-join .control-group').removeClass('error');
+                            $('#server-screen-join .help-inline').html('');
+                            $('#server-screen-join').modal('show');
+
+                        }
+
+                    }, "json");
+
+                } else {
+                    
+                    var params = {
+                        action: "getlog",
+                        map: workflow.map
+                    }
+
+                    $('#server-screen-teams-form select').each(function(id, el){
+                        params[$(el).attr('name')] = $(el).val();
+                    });
+
+                    $('#wait-screen').modal('show');
+                    waitForServer(params, function(result){
+                        $('#wait-screen').modal('hide');
+                        workflow.session = result.session;
+                        workflow.game.world.log = new combatLog(result.data, workflow.game.world);
+                        var teams = workflow.game.world.teams;
+                        for(var i = 0; i < teams.length; i++) {
+                            var strategy = new strategies[result.teams[i].strategy.type](result.teams[i].strategy);
+                            teams[i].setStrategy(strategy);
+                        }
+                        workflow.game.play();
+                        $('#navbar').removeClass('hide');
+                    }, function(result){
+                        $('#wait-screen').modal('hide');
+                        $('#server-screen-teams').modal('show');
+                    });
+
+                }
+
+            }); 
+            
+            
+            
+
+            
+            
+
+            $('#server-screen-join .back-button').click(function(){
+            	$('#server-screen-teams').modal('show');                
+            }); 
+            
+
+            $('#server-screen-join .next-button').click(function(){
+
+                var params = {
+                    action: "join", 
+                    session: workflow.session
+                }
+                
+                $('#server-screen-join input').each(function(id, el){
+                    params[$(el).attr('name')] = $(el).val();
+                });
+                
+                $('#wait-screen').modal('show');
+                
+                $.post("index.php", params, function(result){
+                    
+                    
+                    if (result.error) {
+                        $('#wait-screen').modal('hide');
+
+                    	$('#server-screen-join .control-group').addClass('error');
+                    	$('#server-screen-join .help-inline').html(result.error);
+                    	$('#server-screen-join').modal('show');
+                    	
+                    } else {
+
+                    	params.team = workflow.team = result.team;
+                    	waitForServer(params, function(result){
+                            $('#wait-screen').modal('hide');
+
+                            workflow.game.world.log = new combatLog(result.data, workflow.game.world);
+                            var teams = workflow.game.world.teams;
+                            
+                            for(var i = 0; i < teams.length; i++) {
+                                var strategy = new strategies[result.teams[i].strategy.type](result.teams[i].strategy);
+                                teams[i].setStrategy(strategy);
+                            }
+                                                
+                            workflow.game.play();
+                            $('#navbar').removeClass('hide');
+
+                        }, function(result) {
+                            $('#wait-screen').modal('hide');
+
+                        	$('#server-screen-join .control-group').addClass('error');
+                            $('#server-screen-join .help-inline').html(result.error);
+                            $('#server-screen-join').modal('show');
+                            
+                        });
+                                                
+                    }
+                    
+                }, "json");
+   
+            }); 
+            
+            
+            var waitForServer = function(params, handler, faulthandler) {
+            	faulthandler = faulthandler?faulthandler:handler;
+                $.post("index.php", params, function(result) {
+
+                    if (result.session) params.session = result.session;
+
+                    if (result.error) {
+                        faulthandler.call(this, result);
+                    } else if (result.success) {
+                        handler.call(this, result);
+                    } else {
+                    	waitForServer(params, handler, faulthandler);
+                    }
+                }, "json");
+            	
+            }
+            
+
+            /**
+            $('#assignbar-start').click(function(){
+            	
+            	var input = $('#assignbar-url'), strategy = input.val();
+            	            	
+            	if (!input.data('popover')) {
+            		input.popover({
+                        animation:true,
+                        placement:'bottom',
+                        trigger:'manual',
+                        title:'',
+                        content: ''
+                    });
+            	}
+            	
+            	var showMessage = function(title, message){
+            		input.data('popover').options.content = message;
+            		input.data('popover').options.title = title;
+                    input.popover('show');
+            	} 
+            		
+            	
+            	// TODO: validation of strategy url
+            	if ('' == strategy) {
+            		showMessage('Error', 'Please provide correct service url!');
+            		return false;
+            	} else {
+                    input.popover('hide');
+            	}
+            	
+            	
+            	$('#assignbar-start-progress').show();
+            	$('#assignbar-start').attr('disabled', 'disabled');
+            	input.hide();
+            	
+            	var params = {
+                    action: 'join',
+                    session: workflow.session,
+                    strategy: strategy,
+                    team: workflow.team
+                }
+            	
+            	waitForServer(params, function(result){
+            		input.show();
+            		$('#assignbar-start-progress').hide();
+                    $('#assignbar-start').removeAttr('disabled');
+                    
+
+                    var teams = workflow.game.world.teams;
+                    
+                    for(var i = 0; i < 1; i++) { // teams.length;
+                    	var strategy = new strategies[result.teams[i].strategy.type](result.teams[i].strategy);
+                    	teams[i].setStrategy(strategy);
+                    }
+                                        
+                    workflow.game.play();
+                    
+                    $('#assignbar').addClass('hide');
+                    $('#navbar').removeClass('hide');
+
+            		
+            	}, function(result) {
+            		input.show();
+            		$('#assignbar-start-progress').hide();
+                    $('#assignbar-start').removeAttr('disabled');
+
+                    showMessage('Error', result.error);
+            	});
+            	
+            });
+            **/
+            
+            $('#generator-generate').click(function(){
+            	
+                var players = $('#generator-players').val();
+                var planets = $('#generator-planets').val();
+                var stars   = $('#generator-stars').val();
+                
+                var wteams = [];
+                for(var i = 0; i < players; i++) {
+                	wteams.push(teams[i]);
+                }
+                
+            	$('#navbar').removeClass('hide');
+            	
+            	var generator = new mapGenerator(wteams, bgs);
+                var planets = generator.getMap(canvas.width, canvas.height, planets);
+                var generated = new game(canvas, wcanvas, wteams, planets, {space:{stars: parseInt(stars)}});
+                generated.play();
+                
+            })
+            
+            $('#welcome-screen').modal('show');
+            
+            $('.ui-draggable').draggable();
+
+           
+        }); 
+        
+    	
+    	
+        
+      };
+      
+      
+      
+
+    </script>
+  </head>
+  <body style="background:black">
+  
+    <canvas id="bgcanvas" style="position:absolute;"></canvas>
+    <canvas id="warcanvas" style="position:absolute;"></canvas>
+    
+    
+    <div class="navbar hide" style="z-index:100; position:absolute;width:100%" id="navbar">
+        <div class="navbar-inner">
+          <div class="container">
+            <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </a>
+            <a class="brand" href="#">Planetwars</a>
+            <div class="nav-collapse">
+              <ul class="nav">
+              <!-- <li class="dropdown">
+                  <a href="#" class="dropdown-toggle" data-toggle="dropdown">Menu <b class="caret"></b></a>
+                  <ul class="dropdown-menu">
+                    <li><a href="#">Action</a></li>
+                    <li><a href="#">Another action</a></li>
+                    <li><a href="#">Something else here</a></li>
+                    <li class="divider"></li>
+                    <li class="nav-header">Nav header</li>
+                    <li><a href="#">Separated link</a></li>
+                    <li><a href="#">One more separated link</a></li>
+                  </ul>
+                </li> -->
+                <li><button class="btn" href="#"  onclick="document.animations.stop()">stop</button></li>
+                <li><button class="btn btn-info" href="#"  onclick="document.animations.next()">next step</button></li>
+                <li><button class="btn btn-primary" href="#"  onclick="document.animations.play()">play</button></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+    </div>
+    
+    
+    
+    
+    
+    <div class="navbar hide" style="z-index:100; position:absolute;width:100%" id="assignbar">
+        <div class="navbar-inner">
+          <div class="container">
+            <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </a>
+            <a class="brand" href="#">Planetwars </a>
+            <div class="nav-collapse">
+              <form action="" class="navbar-search pull-left">
+                  <div  style="width:200px;">
+                   <div id="assignbar-start-progress" class="progress progress-striped active hide" style="width:180px;margin:5px 0 0 10px;position:absolute"><div class="bar" style="width: 100%;">Please wait...</div></div>
+                   <input type="text"  id="assignbar-url" placeholder="provide service url there" class="search-query span2" style="width:180px;">
+                  </div>
+              </form>
+              <ul class="nav">
+                <li><button class="btn" href="#"  id="assignbar-start" style="line-height: 16px;margin-top: 7px;">start</button></li>
+                <li></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+    </div>
+    
+    
+    
+    
+    
+    
+    <div class="modal hide fade ui-draggable" id="welcome-screen">
+      <div class="modal-header centered-text">
+        <h3>PLANET WARS</h3>
+      </div>
+      <div class="modal-body centered-text">
+        <p>welcome text</p>
+        
+        <div><a class="btn btn-large generate-button" href="#" data-dismiss="modal">Generate preview</a></div>
+        <div><a class="btn btn-large start-button" href="#" data-dismiss="modal">Start server</a></div>
+        <div><a class="btn btn-large btn-info join-button" href="#" data-dismiss="modal" style="display:none">Join</a></div>
+        
+      </div>
+      <div class="modal-footer">
+        
+      </div>
+    </div>
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="modal hide fade ui-draggable" id="generator-screen">
+      <div class="modal-header">
+        <h3>Preview Generator</h3>
+      </div>
+      <div class="modal-body">
+        <p>preview generator text</p>
+        
+        <form class="form-horizontal">
+		  <fieldset>
+		    <legend>Options</legend>
+            <div class="control-group">
+              <label class="control-label" for="generator-players">Players</label>
+              <div class="controls">
+                <select id="generator-players">
+	                <option>2</option>
+	                <option>3</option>
+	                <option>4</option>
+	                <option selected="selected">5</option>
+	             
+	              </select>
+              </div>
+            </div>
+            
+            <div class="control-group">
+              <label class="control-label" for="generator-planets">Count planets</label>
+              <div class="controls">
+                <select id="generator-planets">
+                    <option>10</option>
+                    <option>20</option>
+                    <option>30</option>
+                    <option>40</option>
+                    <option selected="selected">50</option>
+                  </select>
+              </div>
+            </div>
+            
+            <div class="control-group">
+              <label class="control-label" for="generator-stars">Stars count</label>
+              <div class="controls">
+                <select id="generator-stars">
+                    <option value="1000">1 000</option>
+                    <option value="10000" selected="selected">10 000</option>
+                    <option value="25000">25 000</option>
+                    <option value="50000">50 000</option>
+                    <option value="100000">100 000</option>
+                    <option value="250000">200 000</option>
+                  </select>
+              </div>
+            </div>
+		  </fieldset>
+		</form>
+        
+      </div>
+      <div class="modal-footer">
+	      <a href="#" class="btn btn-primary" data-dismiss="modal" id="generator-generate">Generate</a>
+      </div>
+    </div>
+    
+    
+    
+
+
+    
+    
+    <div class="modal hide fade ui-draggable" id="server-choose-window">
+      <div class="modal-header">
+        <h3>JOIN</h3>
+      </div>
+      <div class="modal-body">
+        <form class="form-horizontal">
+          <fieldset>
+            <legend>CHOOSE SERVER</legend>
+            
+            <div class="control-group">
+              <label class="control-label" for="server-choose-select">Available servers</label>
+              <div class="controls">
+                  <select id="server-choose-select">
+                  </select>
+              </div>
+            </div>
+          </fieldset>
+        </form>
+        
+      </div>
+      <div class="modal-footer">
+          <a href="#" class="btn btn-primary refresh-button" data-dismiss="modal">REFRESH</a>
+          <a href="#" class="btn btn-primary back-button" data-dismiss="modal">BACK</a>
+          <a href="#" class="btn btn-primary next-button" data-dismiss="modal">NEXT</a>
+      </div>
+    </div>
+    
+        
+    
+    
+    
+    
+    
+    
+    <div class="modal hide fade ui-draggable" id="server-screen">
+      <div class="modal-header">
+        <h3>CREATE SERVER</h3>
+      </div>
+      <div class="modal-body">
+        <form class="form-horizontal">
+          <fieldset>
+            <legend>STEP 1. CHOOSE MAP</legend>
+            
+            <div class="control-group">
+              <label class="control-label" for="server-map">Map</label>
+              <div class="controls">
+                <select id="server-map">
+                  </select>
+              </div>
+            </div>
+          </fieldset>
+        </form>
+        
+      </div>
+      <div class="modal-footer">
+          <a href="#" class="btn btn-primary back-button" data-dismiss="modal">BACK</a>
+          <a href="#" class="btn btn-primary next-button" data-dismiss="modal">NEXT</a>
+      </div>
+    </div>
+    
+    
+    
+    <div class="modal hide fade ui-draggable" id="server-screen-teams">
+      <div class="modal-header">
+        <h3>CREATE SERVER</h3>
+      </div>
+      <div class="modal-body">
+        <form class="form-horizontal">
+          <fieldset>
+            <legend>STEP 2. SETUP</legend>
+
+
+            <div class="tabbable">
+              <ul class="nav nav-tabs">
+                <li class="active"><a href="#server-screen-teams-tab2" data-toggle="tab">Sockets version</a></li>
+                <li><a href="#server-screen-teams-tab1" data-toggle="tab">Browser version</a></li>
+              </ul>
+              <div class="tab-content">
+                <div class="tab-pane" id="server-screen-teams-tab1">
+                  <div id="server-screen-teams-form">
+
+                  </div>
+                </div>
+                <div class="tab-pane active" id="server-screen-teams-tab2">
+                  <p>
+                     This version of the game will create a server socket and wait for the connections to the war.
+                     The war starts after receives the required number of players. 
+                  </p>
+                </div>
+              </div>
+            </div>
+
+
+          </fieldset>
+        </form>
+        
+      </div>
+      <div class="modal-footer">
+          <a href="#" class="btn btn-primary back-button" data-dismiss="modal">BACK</a>
+          <a href="#" class="btn btn-primary next-button" data-dismiss="modal">NEXT</a>
+      </div>
+    </div>
+    
+
+    
+    
+    <div class="modal hide fade ui-draggable" id="server-screen-join">
+      <div class="modal-header">
+        <h3>CREATE SERVER</h3>
+      </div>
+      <div class="modal-body">
+        <form class="form-horizontal">
+          <fieldset>
+            <legend>STEP 3. STRATEGY</legend>
+            <div>
+                <div class="control-group">
+                    <label class="control-label" for="server-join-field"><span>Service url:</span></label>
+                    <div class="controls">
+                        <input type="text" value="" name="strategy" />
+                        <span class="help-inline"></span>
+                    </div>
+                </div>
+            </div>
+          </fieldset>
+        </form>
+      </div>
+      <div class="modal-footer">
+          <a href="#" class="btn btn-primary back-button" data-dismiss="modal">BACK</a>
+          <a href="#" class="btn btn-primary next-button" data-dismiss="modal">NEXT</a>
+      </div>
+    </div>
+    
+
+
+
+    
+    <div class="modal hide fade ui-draggable" id="wait-screen">
+      <div class="modal-header">
+        <h3>Please wait...</h3>
+      </div>
+      <div class="modal-body">
+        <div class="progress progress-striped active">
+            <div class="bar" style="width: 100%;"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+      </div>
+    </div>
+
+
+  
+  
+  </body>
+</html>
+

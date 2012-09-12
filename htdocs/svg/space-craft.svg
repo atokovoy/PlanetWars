@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg version="1.1" viewBox="0 0 113.57143 183.21428" xmlns="http://www.w3.org/2000/svg" style="background-color:#090928;">
+  <title>Single-Seater Space Craft</title>
+  <desc>
+    Top-down view of a single-seater space craft. The craft is grey with yellow markings. Its hull consists of polygonal pieces.
+  </desc>
+  <metadata>
+    <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:voc="http://www.w3.org/1999/xhtml/vocab#">
+      <rdf:Description rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:creator>
+          <rdf:Description rdf:about="http://purl.org/net/2008,frankbruder/id">
+            <dc:title>Frank Bruder</dc:title>
+          </rdf:Description>
+        </dc:creator>
+        <voc:license rdf:resource="http://creativecommons.org/publicdomain/zero/1.0/"/>
+        <voc:license rdf:resource="http://web.resource.org/cc/PublicDomain" />
+      </rdf:Description>
+    </rdf:RDF>
+  </metadata>
+  <g transform="translate(-328.93304,-443.08035)">
+    <path d="M379.5,455.125l-9.562,87.875l-23.282,52.125l36.938,15.625l-4.375,9.500h13l-4.375-9.500l36.937-15.625l-23.281-52.125l-9.562-87.875h-12.438z" fill="none" stroke="#000000" stroke-width="1"/>
+    <g>
+      <path d="M387.844,610.75l-0.532-1l-0.531,1l0.094,4.75l2.094,4.75h3.250l-4.375-9.50z" fill="#4d4d4d"/>
+      <path d="M396.5,599l-7.859,5.875l-1.860,5.875h1.063l36.937-15.625l-14.140-0.063l-14.141,3.938z" fill="#1a1a1a"/>
+      <path d="M396.5,599l0.5-28l4.5-28l23.281,52.125l-28.281,3.875z" fill="#919191"/>
+      <path d="M391.938,555.125l-3-50l3-50l9.562,87.875l-2.781,8.062l-6.781,4.063z" fill="#3c3c3c"/>
+      <path d="M379.5,555.125l-4.781-4.063l-4.781-8.062l9.562-87.875l2,50l-2,50z" fill="#c6c6c6"/>
+      <path d="M379.5,455.125v100l6.219,2l6.219-2v-100h-12.438z" fill="#8d8d8d"/>
+      <path d="M384.656,610.75l-0.531-1l-0.531,1l-4.375,9.50h3.250l2.093-4.75l0.094-4.75z" fill="#d3d3d3"/>
+      <path d="M374.938,599l-14.141-4.938l-14.141,1.063l36.938,15.625h1.062l-1.859-5.875l-7.859-5.875z" fill="#4d4d4d"/>
+      <path d="M369.938,543l4.500,28l0.500,28l-28.282-3.875l23.282-52.125z" fill="#cccccc"/>
+      <path d="M386.781,610.75l-1.062-1l-1.063,1l-2.187,9.50h6.500l-2.188-9.50z" fill="#919191"/>
+      <path d="M386.781,610.75l9.719-11.75l-10.781-3l-10.781,3l9.718,11.75h2.125z" fill="#333333"/>
+      <path d="M379.5,555.125l-4.281,21.937l-0.281,21.938l5.945-17l1.945-18l0.336-3.938l-3.664-4.937z" fill="#f8e3a0"/>
+      <path d="M388.609,564l1.946,18l5.945,17l-0.281-21.938l-4.281-21.937l-3.665,4.937l0.336,3.938z" fill="#be930e"/>
+      <path d="M379.5,555.125l3.328,8.875l2.891,2l2.890-2l3.329-8.875h-12.438z" fill="#fdf6df"/>
+      <path d="M374.938,599l7.890-35h5.781l7.891,35l-10.781-2l-10.781,2z" fill="#efb812"/>
+      <path d="M394.18304,576.76835l-2.4062,1.218l0.3593,10.500l4.3594,10.500l-0.1563-11.109l-2.1562-11.109z" fill="#373737"/>
+      <path d="M401.5,543l-9.562,12.125l4.562,43.875l5-56z" fill="#454545"/>
+      <path d="M377.21424,577.04935l-2.1406,10.969l-0.1406,10.968l4.3750-10.500l0.3750-10.500l-2.4688-0.937z" fill="#bdbdbd"/>
+      <path d="M369.938,543l9.562,12.125l-4.562,43.875l-5-56z" fill="#e6e6e6"/>
+      <path d="M358.93304,574.92435l-7.9375,17.750l16.9063,2.344l-8.9688-20.094z" fill="#ffff00"/>
+      <path d="M401.08924,558.76835l-0.7187,8.031h10.6875l-3.5938-8.031h-6.3750z" fill="#b5b500"/>
+      <path d="M379.68304,577.98635l-4.75,21h21.5625l-4.7187-21h-12.0938z" fill="#7b7b7b"/>
+    </g>
+  </g>
+</svg>
