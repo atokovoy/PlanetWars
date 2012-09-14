@@ -123,7 +123,7 @@
 
 
       //test
-      if (stepChanged) {
+      if (stepChanged && world.log) {
           for(var i = 0; i < world.planets.length; i++) {
               var planet = world.log.getPlanetOnStep(world.step-1, i);
               if (planet && !(parseInt(planet.ships) == Math.round(world.planets[i].count)))console.debug(i, parseInt(planet.ships) == Math.round(world.planets[i].count), parseInt(planet.ships), Math.round(world.planets[i].count), world.log);

@@ -1,6 +1,7 @@
 var team = function(color, id) {
 	this.color = color;
 	this.strategy = new strategies.half();
+	this.strategy.team = this;
 	this.planets = [];
 	this.teamId = id;
 }
@@ -17,6 +18,7 @@ team.prototype.removePlanet = function(planet){
 
 
 team.prototype.handleStep = function(world, successhandler, faulthandler, scope) {
+
 	return this.strategy.handleStep(world, successhandler, faulthandler, scope);
 }
 

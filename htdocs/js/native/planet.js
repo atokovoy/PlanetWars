@@ -19,8 +19,6 @@
 
     planet.prototype.move = function(timeDiff) {
     	// neutrality dont grow
-
-
         if (0 != this.team.teamId) {
             this.count += timeDiff * this.growth;
             this.count = Math.round(this.count * 1000000)/1000000;
