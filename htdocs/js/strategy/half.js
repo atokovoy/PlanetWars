@@ -20,7 +20,7 @@
     	    	targetPlanets.push(world.planets[i]);
     	    }
     	}
-    	
+    	 console.debug(teamPlanets, targetPlanets);
     	if (!targetPlanets.length || !teamPlanets.length) {
     		successhandler.call(scope, {});
     		return true;
@@ -33,7 +33,7 @@
 	        
 	        var cnt = Math.floor(from.count/2);
 	        if (!cnt) continue;
-	        
+	         console.debug(from, to);
 	        var found = false;
 	        for (var o=0; o<pushed.lenght; o++) {
 	        	if (pushed[o] == from) {
@@ -46,6 +46,7 @@
 	        pushed.push(from);
 	        
 	        world.squadrons.push(new squadron(cnt, from, to));
+	        console.debug(world.squadrons.length);
     	
     	}
         

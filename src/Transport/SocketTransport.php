@@ -44,15 +44,16 @@ class SocketTransport implements Transport
         $timeout = $this->timeout;
         $length = @socket_read($this->connection, 2);
 //        echo "first round\n";
+        $timoutStep = 50000;
         if ('' == $length) {
             while (('' == $length) && $timeout) {
-                sleep(1);
+                usleep($timoutStep);
                 $length = @socket_read($this->connection, 2);
-                $timeout--;
-                echo $timeout."\n";
+                $timeout = $timeout - $timoutStep/1000000;
+                //echo $timeout."\n";
             }
 
-            if (0 == $timeout) {
+            if (0 >= $timeout) {
 //                echo "timeout\n";
                 throw new \Exception\TransportException('timeout');
             }

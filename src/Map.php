@@ -24,6 +24,15 @@ class Map extends \Aspect\AspectAware
         }
     }
 
+
+    public function loadFromDefinitions($mapData)
+    {
+        foreach ($mapData as $planetDefinition) {
+            $planet = $this->createPlanet($planetDefinition);
+            $this->planets[$planet->getId()] = $planet;
+        }
+    }
+
     /**
      * @param \Player $player
      * @return bool
@@ -166,9 +175,11 @@ class Map extends \Aspect\AspectAware
          */
         foreach ($this->planets as $planet) {
             if ($planet->getGrowthRate() == 0) {
+                $planet->addShips(0);
                 continue;
             }
             if ($planet->getOwnerId() == 0) {
+                $planet->addShips(0);
                 continue;
             }
             $planet->addShips($planet->getGrowthRate());

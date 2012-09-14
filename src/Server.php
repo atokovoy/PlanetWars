@@ -25,6 +25,8 @@ class Server extends World implements GameInterface
 
     protected $socket;
 
+    protected $mapDefinition;
+    
     /**
      * @return \Command\CommandManager
      */
@@ -41,7 +43,7 @@ class Server extends World implements GameInterface
     public function start($port, $ip = '127.0.0.1')
     {
         $socket = socket_create(AF_INET,SOCK_STREAM,SOL_TCP);
-        socket_bind($socket,'127.0.0.1',$port);
+        socket_bind($socket, $ip, $port);
         socket_listen($socket);
         socket_set_nonblock($socket);
         $nPlayers = $this->maxPlayers;
@@ -82,7 +84,12 @@ class Server extends World implements GameInterface
         $this->combatLog = new CombatLog();
         $this->eventManager->subscribe($this->combatLog);
 
-        $this->map->load(new SimpleMapLoader(), $this->mapName);
+        if ($this->mapDefinition) {
+        	$this->map->loadFromDefinitions($this->mapDefinition);
+        } else {
+            $this->map->load(new SimpleMapLoader(), $this->mapName);
+        }
+
         $this->eventManager->notify(new Event(Event::CREATE_WORLD, $this->registry));
     }
 
@@ -105,6 +112,11 @@ class Server extends World implements GameInterface
     public function setMapName($mapName)
     {
         $this->mapName = $mapName;
+    }
+
+    public function setMapDefinition($map)
+    {
+        $this->mapDefinition = $map;
     }
 
     public function setCacheDir($cacheDir)

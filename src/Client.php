@@ -72,6 +72,11 @@ abstract class Client extends Player implements GameInterface
         return $this->registry->getMap()->findAllNotOwn($this);
     }
 
+    protected function calcDistance(Planet $src, Planet $dst)
+    {
+        return $this->registry->getMap()->calcDistance($src, $dst);
+    }
+
     protected function issueOrder(Planet $source, Planet $target, $numShips)
     {
         $fleet = $this->registry->getFleetManager()->issueOrder($this, $source->getId(), $target->getId(), $numShips);
